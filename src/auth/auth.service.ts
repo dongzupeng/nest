@@ -25,6 +25,7 @@ export class AuthService {
     const user = await this.validateUser(loginDto.username, loginDto.password);
     const payload = { username: user.username, sub: user.id };
     return {
+      message: 'Login successful',
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
@@ -42,6 +43,7 @@ export class AuthService {
     const user = await this.userService.create(createUserDto);
     const payload = { username: user.username, sub: user.id };
     return {
+      message: 'Registration successful',
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
