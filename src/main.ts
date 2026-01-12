@@ -16,6 +16,11 @@ async function bootstrap() {
   // 启用CORS
   app.enableCors();
   
+  // 设置全局JWT认证守卫
+  const reflector = app.get('Reflector');
+  const { JwtAuthGuard } = await import('./auth/guards/jwt-auth.guard.js');
+  app.useGlobalGuards(new JwtAuthGuard(reflector));
+  
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
