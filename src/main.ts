@@ -29,9 +29,9 @@ async function bootstrap() {
   const reflector = app.get('Reflector');
   app.useGlobalGuards(new JwtAuthGuard(reflector));
   
-  // 启动应用，监听环境变量PORT或默认3000端口
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`应用程序运行在: ${await app.getUrl()}`);
+  // 启动应用，明确指定主机为127.0.0.1（IPv4），监听环境变量PORT或默认3000端口
+  await app.listen(process.env.PORT ?? 3000, '127.0.0.1');
+  console.log(`应用程序运行在: http://127.0.0.1:${process.env.PORT ?? 3000}`);
 }
 
 // 启动应用
