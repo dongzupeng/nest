@@ -4,7 +4,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post as PostEntity } from './post.entity';
 
-@Controller('posts')
+@Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 

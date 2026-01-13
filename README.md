@@ -46,30 +46,42 @@ src/
 │   ├── user.module.ts     # 用户模块定义
 │   ├── user.controller.ts # 用户控制器
 │   ├── user.service.ts    # 用户服务
-│   └── dto/               # 数据传输对象
-│       ├── create-user.dto.ts
-│       └── update-user.dto.ts
+│   ├── dto/               # 数据传输对象
+│   │   ├── create-user.dto.ts
+│   │   └── update-user.dto.ts
+│   ├── user.controller.spec.ts # 控制器测试
+│   └── user.service.spec.ts     # 服务测试
 ├── auth/                  # 认证模块
 │   ├── auth.module.ts     # 认证模块定义
 │   ├── auth.controller.ts # 认证控制器
 │   ├── auth.service.ts    # 认证服务
+│   ├── decorators/        # 装饰器
+│   │   └── public.decorator.ts
+│   ├── dto/               # 数据传输对象
+│   │   └── login.dto.ts
 │   ├── guards/            # 守卫
 │   │   └── jwt-auth.guard.ts
-│   └── strategies/        # 策略
-│       └── jwt.strategy.ts
+│   ├── strategies/        # 策略
+│   │   └── jwt.strategy.ts
+│   ├── auth.controller.spec.ts # 控制器测试
+│   └── auth.service.spec.ts     # 服务测试
 ├── post/                  # 文章模块
 │   ├── post.entity.ts     # 文章实体
 │   ├── post.module.ts     # 文章模块定义
 │   ├── post.controller.ts # 文章控制器
 │   ├── post.service.ts    # 文章服务
-│   └── dto/               # 数据传输对象
-│       ├── create-post.dto.ts
-│       └── update-post.dto.ts
+│   ├── dto/               # 数据传输对象
+│   │   ├── create-post.dto.ts
+│   │   └── update-post.dto.ts
+│   ├── post.controller.spec.ts # 控制器测试
+│   └── post.service.spec.ts     # 服务测试
 └── common/                # 公共模块
     ├── filters/           # 过滤器
     │   └── http-exception.filter.ts
-    └── middleware/        # 中间件
-        └── logger.middleware.ts
+    ├── middleware/        # 中间件
+    │   └── logger.middleware.ts
+    └── interceptors/      # 拦截器
+        └── response.interceptor.ts
 ```
 
 ## 数据库配置
@@ -82,7 +94,7 @@ TypeOrmModule.forRoot({
   host: 'localhost',
   port: 3306,
   username: 'root',
-  password: 'password',
+  password: '123456',
   database: 'nest_db',
   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   synchronize: true, // 开发环境使用，生产环境建议关闭
@@ -93,12 +105,49 @@ TypeOrmModule.forRoot({
 
 ## API端点
 
+### 统一响应格式
+
+所有API端点都遵循统一的响应格式：
+
+#### 成功响应
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": { /* 返回的数据 */ }
+}
+```
+
+#### 错误响应
+```json
+{
+  "code": 400,
+  "message": "错误信息",
+  "data": null,
+  "timestamp": "2026-01-13T12:34:56.789Z",
+  "path": "/api/endpoint"
+}
+```
+
+### JWT认证说明
+
+本项目使用JWT（JSON Web Token）进行身份验证：
+
+1. **获取Token**：通过登录接口（`/auth/login`）获取JWT令牌
+2. **设置请求头**：在需要认证的API请求头中添加：
+   ```
+   Authorization: Bearer <your-token>
+   ```
+3. **Token有效期**：默认情况下，Token有效期为1小时
+4. **Token过期处理**：当Token过期时，API会返回`{ "code": 401, "message": "Token has expired" }`
+5. **公共接口**：只有登录（`/auth/login`）和注册（`/auth/register`）接口不需要认证
+
 ### 认证模块
 
-| 方法 | 路径 | 描述 | 请求体 |
-|------|------|------|--------|
-| POST | /auth/login | 用户登录 | `{ "username": "string", "password": "string" }` |
-| POST | /auth/register | 用户注册 | `{ "username": "string", "email": "string", "password": "string" }` |
+| 方法 | 路径 | 描述 | 认证 | 请求体 |
+|------|------|------|------|--------|
+| POST | /auth/login | 用户登录 | 无 | `{ "username": "string", "password": "string" }` |
+| POST | /auth/register | 用户注册 | 无 | `{ "username": "string", "email": "string", "password": "string", "firstName": "string", "lastName": "string" }` (firstName和lastName为可选字段) |
 
 ### 用户模块
 
