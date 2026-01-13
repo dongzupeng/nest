@@ -5,21 +5,34 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
+/**
+ * 应用程序启动函数
+ * 配置并启动NestJS应用
+ */
 async function bootstrap() {
+  // 创建NestJS应用实例
   const app = await NestFactory.create(AppModule);
+  
+  // 注册日志中间件
   app.use((req, res, next) => new LoggerMiddleware().use(req, res, next));
+  
+  // 注册全局异常过滤器，统一处理HTTP异常
   app.useGlobalFilters(new HttpExceptionFilter());
   
   // 全局注册响应拦截器，统一响应格式
   app.useGlobalInterceptors(new ResponseInterceptor());
   
+  // 启用CORS
   app.enableCors();
   
   // 设置全局JWT认证守卫
   const reflector = app.get('Reflector');
   app.useGlobalGuards(new JwtAuthGuard(reflector));
   
+  // 启动应用，监听环境变量PORT或默认3000端口
   await app.listen(process.env.PORT ?? 3000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  console.log(`应用程序运行在: ${await app.getUrl()}`);
 }
+
+// 启动应用
 bootstrap();
