@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from '../../user/user.service';
+import { ConfigService } from '@nestjs/config';
 
 /**
  * JWT策略
@@ -10,12 +11,12 @@ import { UserService } from '../../user/user.service';
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private userService: UserService) {
+  constructor(private userService: UserService, private configService: ConfigService) {
     super({
       // 从请求头的Authorization字段中提取Bearer令牌
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      // JWT密钥，必须与签名时使用的密钥一致
-      secretOrKey: 'your-secret-key',
+      // JWT密钥，从环境变量获取
+      secretOrKey: configService.get('JWT_SECRET'),
       // 不忽略令牌过期检查
       ignoreExpiration: false,
     });

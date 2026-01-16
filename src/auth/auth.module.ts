@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -16,10 +17,18 @@ import { UserModule } from '../user/user.module';
     UserModule,
     // 导入PassportModule以支持身份验证
     PassportModule,
-    // 配置JwtModule
-    JwtModule.register({
-      secret: 'your-secret-key',  // JWT密钥，实际项目中应使用环境变量
-      signOptions: { expiresIn: '1h' },  // JWT令牌有效期为1小时
+    // 导入ConfigModule以支持环境变量
+    ConfigModule,
+    // 配置JwtModule，使用环境变量
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),  // 从环境变量获取JWT密钥
+        signOptions: { 
+          expiresIn: configService.get('JWT_EXPIRES_IN'),  // 从环境变量获取令牌有效期
+        },
+      }),
+      inject: [ConfigService],
     }),
   ],
   // 声明认证控制器

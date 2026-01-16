@@ -4,6 +4,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 /**
  * 应用程序启动函数
@@ -29,9 +30,12 @@ async function bootstrap() {
   const reflector = app.get('Reflector');
   app.useGlobalGuards(new JwtAuthGuard(reflector));
   
-  // 启动应用，明确指定主机为127.0.0.1（IPv4），监听环境变量PORT或默认3000端口
-  await app.listen(process.env.PORT ?? 3000, '127.0.0.1');
-  console.log(`应用程序运行在: http://127.0.0.1:${process.env.PORT ?? 3000}`);
+  // 获取ConfigService
+  const configService = app.get(ConfigService);
+  // 启动应用，明确指定主机为127.0.0.1（IPv4），监听环境变量PORT
+  const port = configService.get<number>('PORT') ?? 3000;
+  await app.listen(port, '127.0.0.1');
+  console.log(`应用程序运行在: http://127.0.0.1:${configService.get('PORT')}`);
 }
 
 // 启动应用
