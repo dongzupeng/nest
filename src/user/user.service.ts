@@ -56,11 +56,28 @@ export class UserService {
   }
 
   /**
-   * 获取所有用户
-   * @returns 用户列表
+   * 获取所有用户（支持分页）
+   * @param page 页码，默认值：1
+   * @param limit 每页数量，默认值：10
+   * @returns 用户列表和分页信息
    */
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAll(page: number = 1, limit: number = 10): Promise<{ data: User[]; total: number; page: number; limit: number }> {
+    // 计算偏移量
+    const offset = (page - 1) * limit;
+    
+    // 查询数据并获取总数
+    const [data, total] = await this.userRepository.findAndCount({
+      skip: offset,
+      take: limit,
+    });
+    
+    // 返回分页结果
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 
   /**

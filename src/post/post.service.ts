@@ -38,12 +38,29 @@ export class PostService {
   }
 
   /**
-   * 获取所有文章
-   * @returns 文章列表，包含作者信息
+   * 获取所有文章（支持分页）
+   * @param page 页码，默认值：1
+   * @param limit 每页数量，默认值：10
+   * @returns 文章列表和分页信息
    */
-  async findAll(): Promise<Post[]> {
-    // 查询所有文章并加载作者关联
-    return this.postRepository.find({ relations: ['author'] });
+  async findAll(page: number = 1, limit: number = 10): Promise<{ data: Post[]; total: number; page: number; limit: number }> {
+    // 计算偏移量
+    const offset = (page - 1) * limit;
+    
+    // 查询数据并获取总数，加载作者关联
+    const [data, total] = await this.postRepository.findAndCount({
+      relations: ['author'],
+      skip: offset,
+      take: limit,
+    });
+    
+    // 返回分页结果
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 
   /**

@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UsePipes, ValidationPipe, ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UsePipes, ValidationPipe, ClassSerializerInterceptor, UseInterceptors, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 /**
  * 用户控制器
@@ -25,12 +26,15 @@ export class UserController {
   }
 
   /**
-   * 获取所有用户
-   * @returns 用户列表
+   * 获取所有用户（支持分页）
+   * @param paginationDto 分页参数
+   * @returns 用户列表和分页信息
    */
   @Get()
-  findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  @UsePipes(new ValidationPipe({ transform: true }))  // 使用验证管道，验证请求数据并转换类型
+  findAll(@Query() paginationDto: PaginationDto): Promise<{ data: User[]; total: number; page: number; limit: number }> {
+    const { page = 1, limit = 10 } = paginationDto;
+    return this.userService.findAll(page, limit);
   }
 
   /**

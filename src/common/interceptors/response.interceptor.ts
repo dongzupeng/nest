@@ -56,6 +56,16 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
         if (data && data.code && data.message && data.data) {
           return data;
         }
+        
+        // 检查是否是分页查询结果（包含total、page、limit字段）
+        if (data && data.data && typeof data.total === 'number' && typeof data.page === 'number' && typeof data.limit === 'number') {
+          // 保留分页信息，构造包含分页数据的响应
+          return {
+            code,
+            message,
+            ...data, // 保留data、total、page、limit
+          };
+        }
 
         // 否则，构造标准格式的响应
         return {

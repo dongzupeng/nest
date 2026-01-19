@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UsePipes, ValidationPipe, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UsePipes, ValidationPipe, Request, Query } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post as PostEntity } from './post.entity';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 /**
  * 文章控制器
@@ -13,12 +14,15 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   /**
-   * 获取所有文章
-   * @returns 文章列表
+   * 获取所有文章（支持分页）
+   * @param paginationDto 分页参数
+   * @returns 文章列表和分页信息
    */
   @Get()
-  findAll(): Promise<PostEntity[]> {
-    return this.postService.findAll();
+  @UsePipes(new ValidationPipe({ transform: true }))  // 使用验证管道，验证请求数据并转换类型
+  findAll(@Query() paginationDto: PaginationDto): Promise<{ data: PostEntity[]; total: number; page: number; limit: number }> {
+    const { page = 1, limit = 10 } = paginationDto;
+    return this.postService.findAll(page, limit);
   }
 
   /**
